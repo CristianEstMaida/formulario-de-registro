@@ -1,61 +1,80 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById('formulario');
+  const mensajes = {
+    "nombre": {
+      valueMissing: "El campo nombre es obligatorio."
+    },
+    "email": {
+      valueMissing: "El campo email es obligatorio.",
+      typeMismatch: "El formato ingresado no es válido. Ej: prueba@mail.com"
+    },
+    "clave": {
+      valueMissing: "El campo clave es obligatorio.",
+      tooShort: campo => `Debe tener al menos ${campo.minLength} caracteres.`,
+      tooLong: campo => `Debe tener como máximo ${campo.maxLength} caracteres.`
+    },
+    "pais": {
+      valueMissing: "El campo país es obligatorio."
+    },
+    "terminos": {
+      valueMissing: "El campo términos es obligatorio."
+    }
+  };
 
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
+  const form = document.getElementById('formulario');
 
-        if (form.checkValidity()) {
-            const obj = {
-                nombre: document.querySelector("#nombre").value,
-                email: document.querySelector("#email").value,
-                clave: document.querySelector("#clave").value,
-                pais: document.querySelector("#pais").value
-            };
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
 
-            console.log(obj);
-            alert("✅ Todos los campos son válidos. Enviando datos...");
-            limpiarFormulario(form);
-        } else {
-            alert("❌ Hay errores en el formulario. Por favor, corregí los campos marcados.");
-            const camposInvalidos = form.querySelectorAll(':invalid');
+    if (form.checkValidity()) {
+      const obj = {
+        nombre: document.querySelector("#nombre").value,
+        email: document.querySelector("#email").value,
+        clave: document.querySelector("#clave").value,
+        pais: document.querySelector("#pais").value
+      };
 
-            camposInvalidos.forEach(campo => {
-                console.log(`Campo inválido: ${campo.id}`);
-                console.log(campo.validity);
+      console.log(obj);
+      alert("✅ Todos los campos son válidos. Enviando datos...");
+      limpiarFormulario(form);
+    } else {
+      alert("❌ Hay errores en el formulario. Por favor, corregí los campos marcados.");
+      const camposInvalidos = form.querySelectorAll(':invalid');
 
-                const divError = document.getElementById(`error-${campo.id}`);
-                if (divError) {
-                    divError.textContent = generarMensajeError(campo);
-                }
-            });
-        }
+      camposInvalidos.forEach(campo => {
+        console.log(`Campo inválido: ${campo.id}`);
+        console.log(campo.validity);
+        generarMensajeError(campo);
+      });
+    }
 
-        form.classList.add('was-validated');
-    });
+    form.classList.add('was-validated');
+  });
 
-    form.addEventListener('reset', () => {
-        setTimeout(() => limpiarFormulario(form), 0);
-    });
-});
+  form.addEventListener('reset', () => {
+    setTimeout(() => limpiarFormulario(form), 0);
+  });
 
-function generarMensajeError(campo) {
-    const estado = campo.validity;
+  function generarMensajeError(campo) {
+    const id = campo.id;
+    const divError = document.getElementById("error-" + id);
+    if (!divError || !mensajes[id]) return;
 
-    if (estado.valueMissing) return "Este campo es obligatorio.";
-    if (estado.typeMismatch) return "El formato ingresado no es válido.";
-    if (estado.tooShort) return `Debe tener al menos ${campo.minLength} caracteres.`;
-    if (estado.tooLong) return `Debe tener como máximo ${campo.maxLength} caracteres.`;
-    if (estado.patternMismatch) return "El valor no coincide con el formato esperado.";
-    if (estado.rangeUnderflow || estado.rangeOverflow) return "El valor está fuera del rango permitido.";
-    if (estado.stepMismatch) return "El valor no es válido según el paso definido.";
+    for (const error in campo.validity) {
+      if (campo.validity[error] && mensajes[id][error]) {
+        const mensaje = typeof mensajes[id][error] === 'function'
+          ? mensajes[id][error](campo)
+          : mensajes[id][error];
+        divError.textContent = mensaje;
+        break;
+      }
+    }
+  }
 
-    return "Campo inválido. Verificá el contenido.";
-}
-
-function limpiarFormulario(form) {
+  function limpiarFormulario(form) {
     form.reset();
     form.classList.remove('was-validated');
 
     const errores = form.querySelectorAll('.invalid-feedback');
     errores.forEach(div => div.textContent = '');
-}
+  }
+});

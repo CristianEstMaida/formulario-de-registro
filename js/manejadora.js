@@ -14,13 +14,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             console.log(obj);
             alert("✅ Todos los campos son válidos. Enviando datos...");
+            limpiarFormulario(form);
         } else {
             alert("❌ Hay errores en el formulario. Por favor, corregí los campos marcados.");
             const camposInvalidos = form.querySelectorAll(':invalid');
 
             camposInvalidos.forEach(campo => {
                 console.log(`Campo inválido: ${campo.id}`);
-                console.log(campo.validity); // Objeto validityState
+                console.log(campo.validity);
 
                 const divError = document.getElementById(`error-${campo.id}`);
                 if (divError) {
@@ -33,13 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     form.addEventListener('reset', () => {
-        setTimeout(() => {
-            form.classList.remove('was-validated');
-            const errores = document.querySelectorAll('.invalid-feedback');
-            errores.forEach(div => div.textContent = '');
-        }, 0);
+        setTimeout(() => limpiarFormulario(form), 0);
     });
-
 });
 
 function generarMensajeError(campo) {
@@ -54,4 +50,12 @@ function generarMensajeError(campo) {
     if (estado.stepMismatch) return "El valor no es válido según el paso definido.";
 
     return "Campo inválido. Verificá el contenido.";
+}
+
+function limpiarFormulario(form) {
+    form.reset();
+    form.classList.remove('was-validated');
+
+    const errores = form.querySelectorAll('.invalid-feedback');
+    errores.forEach(div => div.textContent = '');
 }
